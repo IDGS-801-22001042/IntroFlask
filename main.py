@@ -1,10 +1,20 @@
 from flask import Flask, render_template
 
-app=Flask(__name__)
+app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    titulo="IDGS801"
+    lista=["pedro","juan","luis"]
+    return render_template("index.html",titulo= titulo,lista=lista)
+
+@app.route("/ejemplo1")
+def ejemplo1():
+    return render_template("ejemplo1.html")    
+
+@app.route("/ejemplo2")
+def ejemplo2():
+    return render_template("ejemplo2.html")  
 
 @app.route("/hola")
 def hola():
@@ -15,7 +25,8 @@ if __name__ == "__main__":
 
 @app.route("/user/<string:user>")
 def user(user):
-   return f"<h1>Hello {user}</h1>"
+    print(f"User function called with: {user}")  # Add this line
+    return f"<h1>Hello {user}</h1>"
 
 @app.route("/numero/<int:n>")
 def numero(n):
