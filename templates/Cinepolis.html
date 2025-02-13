@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% block container %}
+
+<h1>Cinepolis</h1>
+
+<form method="POST">
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" name="nombre" required><br><br>
+
+    <label for="personas">Número de personas:</label>
+    <input type="number" id="personas" name="personas" min="1" max="7" required><br>
+    {% if error_personas %}
+        <p class="error">{{ error_personas }}</p>
+    {% endif %}
+    <br>
+
+    <label for="boletos">Número de boletos:</label>
+    <input type="number" id="boletos" name="boletos" min="1" required><br>
+    {% if error_boletos %}
+        <p class="error">{{ error_boletos }}</p>
+    {% endif %}
+    <br>
+
+    <label>¿Tarjeta Cineco?</label><br>
+    <label for="tarjeta_si">
+        <input type="radio" id="tarjeta_si" name="tarjeta" value="si" required>
+        Sí
+    </label>
+    <label for="tarjeta_no">
+        <input type="radio" id="tarjeta_no" name="tarjeta" value="no">
+        No
+    </label><br><br>
+
+    <button type="submit">Comprar</button>
+</form>
+
+<div id="salidas">
+    {% if total %}
+        <h2>Salidas</h2>
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <th>Boletos</th>
+                <th>Total</th>
+            </tr>
+            <tr>
+                <td>{{ request.form.get('nombre') }}</td>
+                <td>{{ request.form.get('boletos') }}</td>
+                <td>${{ total }}</td>
+            </tr>
+        </table>
+    {% endif %}
+</div>
+
+<form method="GET">
+    <button type="submit" name="terminar" value="1">Terminar</button>
+</form>
+
+{% if resumen %}
+    <h2>Resumen de compras:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Boletos</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in resumen %}
+                <tr>
+                    {% for celda in fila %}
+                        <td>{{ celda }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="2"><b>TOTAL GENERAL:</b></td>
+                <td><b>{{ total_general }}</b></td>
+            </tr>
+        </tbody>
+    </table>
+{% endif %}
+
+{% endblock %}
