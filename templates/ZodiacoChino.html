@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block container %}
+<div class="row">
+    <h4>Datos personales:</h4>
+    <div class="col-md-6">
+        <form action="/Zodiaco" method="post">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre" required><br>
+
+            <label for="apaterno">Apellido Paterno:</label>
+            <input type="text" id="apaterno" name="apaterno" class="form-control" placeholder="Apellido paterno" required><br>
+
+            <label for="amaterno">Apellido Materno:</label>
+            <input type="text" id="amaterno" name="amaterno" class="form-control" placeholder="Apellido Materno" required><br>
+
+            <h4>Fecha de nacimiento:</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="dia">Día</label>
+                    <input type="number" id="dia" name="dia" min="1" max="31" class="form-control" placeholder="Día" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="mes">Mes</label>
+                    <input type="number" id="mes" name="mes" min="1" max="12" class="form-control" placeholder="Mes" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="anio">Año</label>
+                    <input type="number" id="anio" name="anio" min="1910" max="2025" class="form-control" placeholder="Año" required>
+                </div>
+            </div>
+            <br>
+
+            <label>Sexo:</label>
+            <label>
+                <input type="radio" name="sexo" value="masculino" required> Masculino
+            </label>
+            <label>
+                <input type="radio" name="sexo" value="femenino"> Femenino
+            </label>
+
+            <button type="submit" class="btn btn-primary">Imprimir</button>
+        </form>
+    </div>
+
+    
+    <div class="col-md-6">
+        {% if resultado %}
+            <h3>Resultado:</h3>
+            <p>Hola {{ resultado.nombre }} {{ resultado.apaterno }} {{ resultado.amaterno }}</p>
+            <p>Tienes {{ resultado.edad }} años</p>
+            <p>Tu Signo Zodiacal Chino es: {{ resultado.signo }}</p>
+            <img src="{{ url_for('static', filename='img/' + resultado.img) }}" 
+                 alt="Signo Chino" style="width: 100px; height: 100px;">
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

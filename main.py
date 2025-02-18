@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -46,6 +47,50 @@ def c(param="Juan"):
 @app.route("/operas")
 def operasi():
     return '''<form action="/procesar" method="post">  </form>''' 
+
+@app.route("/Zodiaco", methods=["GET", "POST"])
+def zodiaco():
+    if request.method == "POST":
+        nombre = request.form.get("nombre")
+        apaterno = request.form.get("apaterno")
+        amaterno = request.form.get("amaterno")
+        dia = int(request.form.get("dia"))
+        mes = int(request.form.get("mes"))
+        anio = int(request.form.get("anio"))
+        sexo = request.form.get("sexo")
+
+        fecha_nacimiento = datetime(anio, mes, dia)
+        hoy = datetime.now()
+        edad = hoy.year - fecha_nacimiento.year
+        if (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day):
+            edad -= 1
+
+        signos = [
+            "Rata", "Buey", "Tigre", "Conejo", "Dragón", "Serpiente", 
+            "Caballo", "Cabra", "Mono", "Gallo", "Perro", "Cerdo"
+        ]
+        imagenes = [
+            "rata.png", "buey.png", "tigre.png", "conejo.png", "dragon.png", 
+            "serpiente.png", "caballo.png", "cabra.png", "mono.png", 
+            "gallo.png", "perro.png", "cerdo.png"
+        ]
+        
+        indice_signo = (anio - 1900) % 12
+        signo = signos[indice_signo]
+        img = imagenes[indice_signo]
+
+        resultado = {
+            "nombre": nombre,
+            "apaterno": apaterno,
+            "amaterno": amaterno,
+            "edad": edad,
+            "signo": signo,
+            "img": img
+        }
+
+        return render_template("ZodiacoChino.html", resultado=resultado)
+
+    return render_template("ZodiacoChino.html")
 
 @app.route("/OperasBas", methods=["GET", "POST"])
 def operasBas():
