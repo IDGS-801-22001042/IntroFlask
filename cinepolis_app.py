@@ -75,7 +75,7 @@ class Cinepolis:
 
 cinepolis = Cinepolis()
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/Cinepolis", methods=["GET", "POST"])
 def index():
     total = None
     resumen = None
