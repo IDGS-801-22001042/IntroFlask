@@ -1,14 +1,23 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import forms
+from flask_wtf.csrf import CSRFProtect
+from flask import flash
+from flask import g
 
 app = Flask(__name__)
+app.secret_key="Papitas Con Salsa"
+csrf=CSRFProtect()
 
+# -------------------- Funciones Generales --------------------
 @app.route("/")
 def index():
+    nom='None'
     titulo = "IDGS801"
     lista = ["pedro", "juan", "luis"]
-    return render_template("index.html", titulo=titulo, lista=lista)
+    nom = g.user
+    print("Index 2 {}".format(g.user))
+    return render_template("index.html", titulo=titulo,nom=nom, lista=lista)
 
 @app.route("/ejemplo1")
 def ejemplo1():
@@ -24,13 +33,11 @@ def hola():
 
 @app.route("/user/<string:user>")
 def user(user):
-    print(f"User function called with: {user}")
     return f"<h1>Hello {user}</h1>"
 
 @app.route("/numero/<int:n>")
 def numero(n):
-   
-    return f"<h1>El número es: {n}</h1>" 
+    return f"<h1>El número es: {n}</h1>"
 
 @app.route("/user/<int:id>/<string:username>")
 def username(id, username):
@@ -45,10 +52,7 @@ def suma(n1, n2):
 def c(param="Juan"):
     return f"<h1>Hola, {param}</h1>"
 
-@app.route("/operas")
-def operasi():
-    return '''<form action="/procesar" method="post">  </form>''' 
-
+# -------------------- Zodiaco Chino --------------------
 @app.route("/Zodiaco", methods=["GET", "POST"])
 def zodiaco():
     if request.method == "POST":
@@ -58,7 +62,6 @@ def zodiaco():
         dia = int(request.form.get("dia"))
         mes = int(request.form.get("mes"))
         anio = int(request.form.get("anio"))
-        sexo = request.form.get("sexo")
 
         fecha_nacimiento = datetime(anio, mes, dia)
         hoy = datetime.now()
@@ -67,12 +70,12 @@ def zodiaco():
             edad -= 1
 
         signos = [
-            "Rata", "Buey", "Tigre", "Conejo", "Dragón", "Serpiente", 
+            "Rata", "Buey", "Tigre", "Conejo", "Dragón", "Serpiente",
             "Caballo", "Cabra", "Mono", "Gallo", "Perro", "Cerdo"
         ]
         imagenes = [
-            "rata.png", "buey.png", "tigre.png", "conejo.png", "dragon.png", 
-            "serpiente.png", "caballo.png", "cabra.png", "mono.png", 
+            "rata.png", "buey.png", "tigre.png", "conejo.png", "dragon.png",
+            "serpiente.png", "caballo.png", "cabra.png", "mono.png",
             "gallo.png", "perro.png", "cerdo.png"
         ]
         
@@ -93,60 +96,123 @@ def zodiaco():
 
     return render_template("ZodiacoChino.html")
 
+# -------------------- Operas Básicas --------------------
 @app.route("/OperasBas", methods=["GET", "POST"])
 def operasBas():
     return render_template("OperasBas.html")
 
-@app.route("/resultado", methods=["GET", "POST"])
+@app.route("/resultado", methods=["POST"])
 def res():
     if request.method == "POST":  
-        n1 = request.form.get("n1")
-        n2 = request.form.get("n2")
-        operacion = request.form.get("operacion")  
+        n1 = int(request.form.get("n1", 0))
+        n2 = int(request.form.get("n2", 0))
+        operacion = request.form.get("operacion")
 
-        try:
-            n1 = int(n1)
-            n2 = int(n2)
+        if operacion == "multiplicacion":
+            result = n1 * n2
+        elif operacion == "suma":
+            result = n1 + n2
+        elif operacion == "resta":
+            result = n1 - n2
+        elif operacion == "division":
+            if n2 == 0:
+                return "No se puede dividir por cero."
+            result = n1 / n2
+        else:
+            return "Operación no válida."
+        
+        return f"El resultado de la {operacion} entre {n1} y {n2} es: {result}"
 
-            if operacion == "multiplicacion":
-                result = n1 * n2
-                return f"La multiplicación de {n1} y {n2} es: {result}"
-            elif operacion == "suma":
-                result = n1 + n2
-                return f"La suma de {n1} y {n2} es: {result}"
-            elif operacion == "resta":
-                result = n1 - n2
-                return f"La resta de {n1} y {n2} es: {result}"
-            elif operacion == "division":
-                if n2 == 0:
-                    return "No se puede dividir por cero."
-                result = n1 / n2
-                return f"La división de {n1} y {n2} es: {result}"
-            else:
-                return "Operación no válida."  
-
-        except (ValueError, TypeError):
-            return "Solo números"
-    return "Únicamente solicitudes POST" 
-
-
-
-
-@app.route("/Alumnos")
+# -------------------- Alumnos --------------------
+@app.route("/Alumnos", methods=["GET", "POST"])
 def alumnos():
-    mat=''
-    nom=''
-    ape=''
-    email=''
+    mat=""
+    nom=""
+    ape=""
+    email=""
     alumno_class=forms.UserForm(request.form)
-    if request.method=='POST':
-        mat=alumno_class.matricula.data
-        nom=alumno_class.nombre.data
-        ape=alumno_class.apellido.data
-        email=alumno_class.correo.data
-
+    if request.method == "POST" and alumno_class.validate():
+        mat = alumno_class.matricula.data
+        nom = alumno_class.nombre.data
+        ape = alumno_class.apellido.data
+        email = alumno_class.correo.data
+       
+        mensaje = 'Bienvenido {}'.format(nom)
+        flash(mensaje) 
+        
     return render_template("Alumnos.html", form=alumno_class, mat=mat, nom=nom, ape=ape, email=email)
 
 
+
+#-------------------- Manejo de errores -------------
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.before_request
+def before_request():
+    print("BEFORER1")
+    return None
+    
+@app.after_request
+def after_request(response):
+    print("AFTERR1")
+    return response
+
+# -------------------- Cinepolis --------------------
+class Cinepolis:
+    def __init__(self):
+        self.compras = []
+        self.total_corte = 0.0
+        self.personas = 0
+
+    def realizar_compra(self, nombre, personas, boletos, tarjeta):
+        self.personas = personas
+        total = self.calcular_total(boletos)
+        if tarjeta == "si":
+            total *= 0.9
+        self.total_corte += total
+        self.compras.append((nombre, boletos, round(total, 2)))
+        return total
+
+    def calcular_total(self, boletos):
+        precio_unitario = 12
+        if boletos > 5:
+            descuento = 0.15
+        elif 3 <= boletos <= 5:
+            descuento = 0.10
+        else:
+            descuento = 0
+        return boletos * precio_unitario * (1 - descuento)
+
+    def terminar_programa(self):
+        resumen = [(compra[0], compra[1], f"${compra[2]:.2f}") for compra in self.compras]
+        return resumen, f"${self.total_corte:.2f}"
+
+    def validar_personas(self, personas):
+        return personas if 1 <= personas <= 7 else None
+
+cinepolis = Cinepolis()
+
+@app.route("/Cinepolis", methods=["GET", "POST"])
+def cinepolis_index():
+    total, resumen, total_general, error_personas, error_boletos = None, None, None, None, None
+    if request.method == "POST":
+        nombre = request.form.get("nombre")
+        personas = int(request.form.get("personas", 0))
+        boletos = int(request.form.get("boletos", 0))
+        tarjeta = request.form.get("tarjeta")
+
+        if cinepolis.validar_personas(personas):
+            total = cinepolis.realizar_compra(nombre, personas, boletos, tarjeta)
+        else:
+            error_personas = "Número de personas no válido."
+
+    elif request.method == "GET" and request.args.get("terminar"):
+        resumen, total_general = cinepolis.terminar_programa()
+
+    return render_template("cinepolis.html", total=total, resumen=resumen, total_general=total_general, error_personas=error_personas, error_boletos=error_boletos)
+
 if __name__ == "__main__":
+    csrf.init_app(app)
     app.run(debug=True, port=3000)
