@@ -1,47 +1,37 @@
 {% extends "layout.html" %}
+{% import "_macros.html" as macro %}
+
 {% block container %}
 <div class="row">
     <h4>Datos personales:</h4>
     <div class="col-md-6">
-        <form action="/Zodiaco" method="post">
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre" required><br>
+        <form action="/Zodiaco" method="post" novalidate>
+            {{ form.csrf_token }}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-            <label for="apaterno">Apellido Paterno:</label>
-            <input type="text" id="apaterno" name="apaterno" class="form-control" placeholder="Apellido paterno" required><br>
-
-            <label for="amaterno">Apellido Materno:</label>
-            <input type="text" id="amaterno" name="amaterno" class="form-control" placeholder="Apellido Materno" required><br>
+            {{ macro.camposNuevos(form.nombre) }}
+            {{ macro.camposNuevos(form.apaterno) }}
+            {{ macro.camposNuevos(form.amaterno) }}
 
             <h4>Fecha de nacimiento:</h4>
             <div class="row">
                 <div class="col-md-4">
-                    <label for="dia">Día</label>
-                    <input type="number" id="dia" name="dia" min="1" max="31" class="form-control" placeholder="Día" required>
+                    {{ macro.camposNuevos(form.dia) }}
                 </div>
                 <div class="col-md-4">
-                    <label for="mes">Mes</label>
-                    <input type="number" id="mes" name="mes" min="1" max="12" class="form-control" placeholder="Mes" required>
+                    {{ macro.camposNuevos(form.mes) }}
                 </div>
                 <div class="col-md-4">
-                    <label for="anio">Año</label>
-                    <input type="number" id="anio" name="anio" min="1910" max="2025" class="form-control" placeholder="Año" required>
+                    {{ macro.camposNuevos(form.anio) }}
                 </div>
             </div>
             <br>
 
-            <label>Sexo:</label>
-            <label>
-                <input type="radio" name="sexo" value="masculino" required> Masculino
-            </label>
-            <label>
-                <input type="radio" name="sexo" value="femenino"> Femenino
-            </label>
+            {{ macro.camposNuevos(form.sexo) }}
 
             <button type="submit" class="btn btn-primary">Imprimir</button>
         </form>
     </div>
-
     
     <div class="col-md-6">
         {% if resultado %}

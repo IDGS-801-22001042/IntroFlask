@@ -4,6 +4,7 @@ import forms
 from flask_wtf.csrf import CSRFProtect
 from flask import flash
 from flask import g
+from forms import ZodiacoForm
 
 app = Flask(__name__)
 app.secret_key="Papitas Con Salsa"
@@ -55,14 +56,16 @@ def c(param="Juan"):
 # -------------------- Zodiaco Chino --------------------
 @app.route("/Zodiaco", methods=["GET", "POST"])
 def zodiaco():
-    if request.method == "POST":
-        nombre = request.form.get("nombre")
-        apaterno = request.form.get("apaterno")
-        amaterno = request.form.get("amaterno")
-        dia = int(request.form.get("dia"))
-        mes = int(request.form.get("mes"))
-        anio = int(request.form.get("anio"))
-
+    form = forms.ZodiacoForm(request.form)
+    
+    if request.method == "POST" and form.validate():
+        nombre = form.nombre.data
+        apaterno = form.apaterno.data
+        amaterno = form.amaterno.data
+        dia = form.dia.data
+        mes = form.mes.data
+        anio = form.anio.data
+        
         fecha_nacimiento = datetime(anio, mes, dia)
         hoy = datetime.now()
         edad = hoy.year - fecha_nacimiento.year
@@ -92,9 +95,9 @@ def zodiaco():
             "img": img
         }
 
-        return render_template("ZodiacoChino.html", resultado=resultado)
+        return render_template("ZodiacoChino.html", form=form, resultado=resultado)
 
-    return render_template("ZodiacoChino.html")
+    return render_template("ZodiacoChino.html", form=form)
 
 # -------------------- Operas Básicas --------------------
 @app.route("/OperasBas", methods=["GET", "POST"])
@@ -196,22 +199,24 @@ cinepolis = Cinepolis()
 
 @app.route("/Cinepolis", methods=["GET", "POST"])
 def cinepolis_index():
-    total, resumen, total_general, error_personas, error_boletos = None, None, None, None, None
-    if request.method == "POST":
-        nombre = request.form.get("nombre")
-        personas = int(request.form.get("personas", 0))
-        boletos = int(request.form.get("boletos", 0))
-        tarjeta = request.form.get("tarjeta")
+    form = forms.CinepolisForm(request.form)
+    total, resumen, total_general = None, None, None
+
+    if request.method == "POST" and form.validate():
+        nombre = form.nombre.data
+        personas = form.personas.data
+        boletos = form.boletos.data
+        tarjeta = form.tarjeta.data
 
         if cinepolis.validar_personas(personas):
             total = cinepolis.realizar_compra(nombre, personas, boletos, tarjeta)
         else:
-            error_personas = "Número de personas no válido."
+            flash("Número de personas no válido.", "error")
 
     elif request.method == "GET" and request.args.get("terminar"):
         resumen, total_general = cinepolis.terminar_programa()
 
-    return render_template("cinepolis.html", total=total, resumen=resumen, total_general=total_general, error_personas=error_personas, error_boletos=error_boletos)
+    return render_template("cinepolis.html", form=form, total=total, resumen=resumen, total_general=total_general)
 
 if __name__ == "__main__":
     csrf.init_app(app)

@@ -1,56 +1,36 @@
 {% extends "layout.html" %}
-{% block container %}
+{% import "_macros.html" as macro %}
 
-<h1>Cinepolis</h1>
+{% block container %}
+<h1>Cinépolis</h1>
 
 <form method="POST">
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" name="nombre" required><br><br>
-
-    <label for="personas">Número de personas:</label>
-    <input type="number" id="personas" name="personas" min="1" max="7" required><br>
-    {% if error_personas %}
-        <p class="error">{{ error_personas }}</p>
-    {% endif %}
-    <br>
-
-    <label for="boletos">Número de boletos:</label>
-    <input type="number" id="boletos" name="boletos" min="1" required><br>
-    {% if error_boletos %}
-        <p class="error">{{ error_boletos }}</p>
-    {% endif %}
-    <br>
-
-    <label>¿Tarjeta Cineco?</label><br>
-    <label for="tarjeta_si">
-        <input type="radio" id="tarjeta_si" name="tarjeta" value="si" required>
-        Sí
-    </label>
-    <label for="tarjeta_no">
-        <input type="radio" id="tarjeta_no" name="tarjeta" value="no">
-        No
-    </label><br><br>
+    {{form.csrf_token}}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+    {{ macro.input_field(form.nombre) }}
+    {{ macro.input_field(form.personas) }}
+    {{ macro.input_field(form.boletos) }}
+    {{ macro.input_field(form.tarjeta) }}
 
     <button type="submit">Comprar</button>
 </form>
 
-<div id="salidas">
-    {% if total %}
-        <h2>Salidas</h2>
-        <table>
-            <tr>
-                <th>Nombre</th>
-                <th>Boletos</th>
-                <th>Total</th>
-            </tr>
-            <tr>
-                <td>{{ request.form.get('nombre') }}</td>
-                <td>{{ request.form.get('boletos') }}</td>
-                <td>${{ total }}</td>
-            </tr>
-        </table>
-    {% endif %}
-</div>
+{% if total %}
+    <h2>Salidas</h2>
+    <table>
+        <tr>
+            <th>Nombre</th>
+            <th>Boletos</th>
+            <th>Total</th>
+        </tr>
+        <tr>
+            <td>{{ form.nombre.data }}</td>
+            <td>{{ form.boletos.data }}</td>
+            <td>${{ total }}</td>
+        </tr>
+    </table>
+{% endif %}
 
 <form method="GET">
     <button type="submit" name="terminar" value="1">Terminar</button>
@@ -81,5 +61,4 @@
         </tbody>
     </table>
 {% endif %}
-
 {% endblock %}
